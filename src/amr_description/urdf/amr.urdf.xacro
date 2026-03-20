@@ -1,0 +1,367 @@
+<?xml version="1.0"?>
+<robot name="amr" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ========================= -->
+  <!-- Basic dimensions          -->
+  <!-- ========================= -->
+  <xacro:property name="body_length" value="0.45"/>
+  <xacro:property name="body_width" value="0.30"/>
+  <xacro:property name="body_height" value="0.10"/>
+  
+  <xacro:property name="wheel_radius" value="0.10"/>
+  <xacro:property name="wheel_width" value="0.04"/>
+  <xacro:property name="wheel_separation" value="0.30"/>
+  <xacro:property name="wheel_y" value="${wheel_separation / 2.0}"/>
+
+  <xacro:property name="caster_radius" value="0.03"/>
+  <xacro:property name="caster_x" value="-0.18"/>
+  <xacro:property name="caster_radius" value="0.03"/>
+  <xacro:property name="rear_caster_x" value="-0.18"/>
+  <xacro:property name="front_caster_x" value="0.18"/>
+  <xacro:property name="caster_z" value="-0.035"/>
+
+
+
+  <!-- Lidar Dimensions--> 
+  <xacro:property name="lidar_radius" value="0.04"/>
+  <xacro:property name="lidar_height" value="0.05"/>
+  <xacro:property name="lidar_x" value="0.0"/>
+  <xacro:property name="lidar_y" value="0.0"/>
+  <xacro:property name="lidar_z" value="0.23"/>
+
+
+  <!-- Body sits above axle plane -->
+  <xacro:property name="body_z" value="0.06"/>
+
+  <!-- ========================= -->
+  <!-- Masses                    -->
+  <!-- ========================= -->
+  <xacro:property name="body_mass" value="8.0"/>
+  <xacro:property name="wheel_mass" value="0.6"/>
+  <xacro:property name="caster_mass" value="0.2"/>
+
+  <!-- ========================= -->
+  <!-- Materials                 -->
+  <!-- ========================= -->
+  <material name="blue">
+    <color rgba="0.15 0.35 0.85 1.0"/>
+  </material>
+
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+
+  <material name="gray">
+    <color rgba="0.7 0.7 0.7 1.0"/>
+  </material>
+
+  <!-- ========================= -->
+  <!-- Root frames               -->
+  <!-- ========================= -->
+
+  <!-- base_link is the axle-height robot frame -->
+  <link name="base_link"/>
+
+  <!-- ========================= -->
+  <!-- Chassis body              -->
+  <!-- ========================= -->
+  <link name="body_link">
+    <inertial>
+      <origin xyz="0 0 ${body_z}" rpy="0 0 0"/>
+      <mass value="${body_mass}"/>
+      <inertia
+        ixx="0.08" ixy="0.0" ixz="0.0"
+        iyy="0.18" iyz="0.0"
+        izz="0.22"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 ${body_z}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height}"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 ${body_z}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${body_length} ${body_width} ${body_height - 0.02}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_link_to_body" type="fixed">
+    <parent link="base_link"/>
+    <child link="body_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ========================= -->
+  <!-- Left wheel                -->
+  <!-- ========================= -->
+  <link name="left_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${wheel_mass}"/>
+      <inertia
+        ixx="0.002" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel_link"/>
+    <origin xyz="0 ${wheel_y} 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="20.0" velocity="30.0"/>
+    <dynamics damping="0.05" friction="0.0"/>
+  </joint>
+
+
+
+  <!-- ========================= -->
+  <!-- Lidar                     -->
+  <!-- ========================= -->
+
+  <link name="lidar_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.2"/>
+      <inertia
+        ixx="0.0001" ixy="0.0" ixz="0.0"
+        iyy="0.0001" iyz="0.0"
+        izz="0.0001"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+    </collision> -->
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="${lidar_x} ${lidar_y} ${lidar_z}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ========================= -->
+  <!-- Right wheel               -->
+  <!-- ========================= -->
+  <link name="right_wheel_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${wheel_mass}"/>
+      <inertia
+        ixx="0.002" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.002"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5707963 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel_link"/>
+    <origin xyz="0 -${wheel_y} 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="20.0" velocity="30.0"/>
+    <dynamics damping="0.05" friction="0.0"/>
+  </joint>
+
+  <!-- ========================= -->
+  <!-- Rear + Front caster       -->
+  <!-- ========================= -->
+  <link name="rear_caster_link">
+    <inertial>
+      <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+      <mass value="${caster_mass}"/>
+      <inertia
+        ixx="0.0002" ixy="0.0" ixz="0.0"
+        iyy="0.0002" iyz="0.0"
+        izz="0.0002"/>
+    </inertial>
+
+    <!-- Sphere is offset downward inside the link -->
+    <visual>
+      <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="front_caster_link">
+  <inertial>
+    <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+    <mass value="${caster_mass}"/>
+    <inertia
+      ixx="0.0002" ixy="0.0" ixz="0.0"
+      iyy="0.0002" iyz="0.0"
+      izz="0.0002"/>
+  </inertial>
+
+  <visual>
+    <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+    <geometry>
+      <sphere radius="${caster_radius}"/>
+    </geometry>
+    <material name="gray"/>
+  </visual>
+
+  <collision>
+    <origin xyz="0 0 -${caster_radius}" rpy="0 0 0"/>
+    <geometry>
+      <sphere radius="${caster_radius}"/>
+    </geometry>
+  </collision>
+</link>
+
+  <!-- Place caster link origin on the axle plane -->
+  <joint name="rear_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_caster_link"/>
+    <origin xyz="${rear_caster_x} 0 ${caster_z}" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="front_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_caster_link"/>
+    <origin xyz="${front_caster_x} 0 ${caster_z}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ========================= -->
+  <!-- ros2_control              -->
+  <!-- ========================= -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+
+    <joint name="left_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="right_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <!-- ========================= -->
+  <!-- Gazebo surface settings   -->
+  <!-- ========================= -->
+  <gazebo reference="left_wheel_link">
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+  </gazebo>
+
+  <gazebo reference="right_wheel_link">
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+  </gazebo>
+
+  <gazebo reference="rear_caster_link">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+  </gazebo>
+
+  <gazebo reference="front_caster_link">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <parameters>$(find amr_control)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+
+ <!-- Lidar Plugin -->
+  <gazebo reference="lidar_link">
+    <sensor name="lidar_sensor" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.29</min>
+          <max>8.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+
+      <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=/scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
